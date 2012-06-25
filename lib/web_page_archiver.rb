@@ -49,7 +49,7 @@ require 'mime/types'
             next if @contents[k][:body] != nil
             v = @contents[k][:uri]
             f = open(v)
-            @contents[k] = { :body=>f.read, :uri=> v, :content_type=> content_type(f) }
+            @contents[k] = @contents[k].merge({ :body=>f.read, :uri=> v, :content_type=> content_type(f) })
           end
         }
         @threads.push t
@@ -157,6 +157,8 @@ require 'mime/types'
   #mhtml = WebPageArchiver::MhtmlGenerator.generate("https://rubygems.org/")
   #open("output.mht", "w+"){|f| f.write mhtml }
     class DataUriHtmlGenerator
+      include GeneratorHelpers
+      
       attr_accessor :conf
       def DataUriHtmlGenerator.generate(uri)
         generateror = DataUriHtmlGenerator.new
@@ -169,7 +171,7 @@ require 'mime/types'
               uri = i.attr('src');
               uri = join_uri( filename_or_uri, uri).to_s
               uid = Digest::MD5.hexdigest(uri)
-              @contents[uid] = {:uri=>uri}
+              @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'src'}
               i.set_attribute('src',"cid:#{uid}")
             }
           #styles
@@ -177,7 +179,7 @@ require 'mime/types'
               uri = i.attr('href');
               uri = join_uri( filename_or_uri, uri)
               uid = Digest::MD5.hexdigest(uri)
-              @contents[uid] = {:uri=>uri}
+              @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'href'}
               i.set_attribute('href',"cid:#{uid}")
             }
           #scripts
@@ -186,7 +188,7 @@ require 'mime/types'
               uri = i.attr('src');
               uri = join_uri( filename_or_uri, uri)
               uid = Digest::MD5.hexdigest(uri)
-              @contents[uid] = {:uri=>uri}
+              @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'src'}
               i.set_attribute('src',"cid:#{uid}")
           }
           self.set_contents
@@ -200,21 +202,15 @@ require 'mime/types'
         self.start_download_thread
         # wait until download finished.
         @threads.each{|t|t.join}
-        @contents.each{|k,v|self.add_html_content(cid)}
+        @contents.each do |k,v|
+          content_benc=Base64.encode64(v[:body]).gsub(/\n/,'')
+          tag=v[:parser_ref]
+          attribute=v[:attribute_name]
+          content_type=v[:content_type]
+          tag.set_attribute(attribute,"data:#{content_type};base64,#{content_benc}")
+        end
       end
-      def add_html_content(cid)
-        filename = File.basename(URI(@contents[cid][:uri]).path)
-        @src.puts "--#{@boundary}"
-        @src.puts "Content-Disposition: inline; filename=" + filename 
-        @src.puts "Content-Type: #{@contents[cid][:content_type]}"
-        @src.puts "Content-Location: #{@contents[cid][:uri]}"
-        @src.puts "Content-Transfer-Encoding: Base64"
-        @src.puts "Content-Id: #{cid}"
-        @src.puts ""
-        @src.puts "#{Base64.encode64(@contents[cid][:body])}"
-        @src.puts ""
-         return
-      end
+      
     end
 
 end
