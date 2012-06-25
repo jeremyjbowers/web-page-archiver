@@ -4,14 +4,14 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = %q{web_page_archiver}
-  s.version = "0.0.2"
+  s.name = %q{web-page-archiver}
+  s.version = "0.0.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["takuya", "murb"]
   s.date = %q{2012-06-25}
-  s.description = %q{web page archiver is builder of mhtml file}
-  s.email = %q{github.com@murb.nl}
+  s.description = %q{web page archiver creates self-containing, one file, html or mhtml filese}
+  s.email = %q{github.com+web-page-archiver@murb.nl}
   s.extra_rdoc_files = [
     "LICENSE.txt",
     "README.rdoc"
@@ -26,19 +26,20 @@ Gem::Specification.new do |s|
     "VERSION",
     "fixtures/image.png",
     "fixtures/index.html",
+    "fixtures/result.html",
     "fixtures/result.mht",
     "fixtures/style.css",
     "fixtures/test.js",
     "lib/web_page_archiver.rb",
     "test/helper.rb",
     "test/test_web_page_archiver.rb",
-    "web_page_archiver.gemspec"
+    "web-page-archiver.gemspec"
   ]
   s.homepage = %q{http://github.com/murb/web-page-archiver}
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.6}
-  s.summary = %q{web page archiver is builder of mhtml file}
+  s.summary = %q{web page archiver creates self-containing, one file, html or mhtml files}
 
   if s.respond_to? :specification_version then
     current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION

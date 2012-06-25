@@ -14,12 +14,12 @@ require 'rake'
 require 'jeweler'
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
-  gem.name = "web_page_archiver"
+  gem.name = "web-page-archiver"
   gem.homepage = "http://github.com/murb/web-page-archiver"
   gem.license = "MIT"
-  gem.summary = %Q{web page archiver is builder of mhtml file}
-  gem.description = %Q{web page archiver is builder of mhtml file}
-  gem.email = "github.com@murb.nl"
+  gem.summary = %Q{web page archiver creates self-containing, one file, html or mhtml files}
+  gem.description = %Q{web page archiver creates self-containing, one file, html or mhtml filese}
+  gem.email = "github.com+web-page-archiver@murb.nl"
   gem.authors = ["takuya","murb"]
   # dependencies defined in Gemfile
 end
