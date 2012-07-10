@@ -19,4 +19,12 @@ class TestWebPageArchiver < Test::Unit::TestCase
     assert(mhtml.match('<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAACXBIWXMAABYlAAAWJQFJUiTwAAAAGXRFWHRTb2Z0d2'))
     assert(mhtml.match('<script type="text/javascript" src="data:application/javascript;base64,ZnVuY3Rpb24gdGVzdCgpIHsKCWFsZXJ0KCd0ZXN0Jyk7Cn0="></script><link rel="stylesheet" href="data:text/css;base64,aDEgewoJY29sb3I6IGdyZWVuOwp9" type="text/css" charset="utf-8">'))
   end
+  
+  def test_generate_inline_html_local
+    mhtml = WebPageArchiver::InlineHtmlGenerator.generate("fixtures/index.html")
+    assert(mhtml.match("alert"))
+    assert(mhtml.match('color: green;'))
+    assert(mhtml.match('<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAACXBIWXMAABYlAAAWJQFJUiTwAAAAGXRFWHRTb2Z0d2'))
+  end
+  
 end

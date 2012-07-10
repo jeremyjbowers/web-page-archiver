@@ -212,4 +212,80 @@ require 'mime/types'
       
     end
 
+
+    # == generate self-containing all-inline html file (html) file 
+    #
+    # mhtml = WebPageArchiver::InlineHtmlGenerator.generate("https://rubygems.org/")
+    # open("output.html", "w+"){|f| f.write mhtml }
+    class InlineHtmlGenerator
+      include GeneratorHelpers
+      
+      attr_accessor :conf
+      def InlineHtmlGenerator.generate(uri)
+        generateror = InlineHtmlGenerator.new
+        return generateror.convert(uri)
+      end
+
+      def convert(filename_or_uri)
+          @parser = Nokogiri::HTML(open(filename_or_uri))
+          @parser.search('img').each{|i| 
+              uri = i.attr('src');
+              uri = join_uri( filename_or_uri, uri).to_s
+              uid = Digest::MD5.hexdigest(uri)
+              @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'src'}
+              i.set_attribute('src',"cid:#{uid}")
+            }
+          #styles
+          @parser.search('link[rel=stylesheet]').each{|i|
+              uri = i.attr('href');
+              uri = join_uri( filename_or_uri, uri)
+              uid = Digest::MD5.hexdigest(uri)
+              @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'href'}
+              i.set_attribute('href',"cid:#{uid}")
+            }
+          #scripts
+          @parser.search('script').map{ |i|
+              next unless i.attr('src');
+              uri = i.attr('src');
+              uri = join_uri( filename_or_uri, uri)
+              uid = Digest::MD5.hexdigest(uri)
+              @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'src'}
+              i.set_attribute('src',"cid:#{uid}")
+          }
+          self.set_contents
+          return @parser.to_s
+      end
+
+      def set_contents
+        #prepeare_queue
+        @contents.each{|k,v| @queue.push k}
+        #start download threads
+        self.start_download_thread
+        # wait until download finished.
+        @threads.each{|t|t.join}
+        @contents.each do |k,v|
+          tag=v[:parser_ref]
+          if tag.name == "script"
+            content_benc=Base64.encode64(v[:body]).gsub(/\n/,'')
+          
+            attribute=v[:attribute_name]
+            content_type=v[:content_type]
+            tag.content=v[:body]
+            tag.remove_attribute(v[:attribute_name])
+          elsif tag.name == "link" and v[:content_type]="text/css"
+            tag.after("<style type=\"text/css\">#{v[:body]}</style>")
+            tag.remove()
+          else
+            # back to inline
+            content_benc=Base64.encode64(v[:body]).gsub(/\n/,'')
+            attribute=v[:attribute_name]
+            content_type=v[:content_type]
+            tag.set_attribute(attribute,"data:#{content_type};base64,#{content_benc}")
+            
+          end
+        end
+      end
+      
+    end
+
 end
