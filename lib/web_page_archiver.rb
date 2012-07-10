@@ -61,11 +61,10 @@ require 'mime/types'
     end
   end
 
-# generate mhtml file 
-# == uri target uri
-# return mhtml file
-#mhtml = WebPageArchiver::MhtmlGenerator.generate("https://rubygems.org/")
-#open("output.mht", "w+"){|f| f.write mhtml }
+# == generate mhtml (mht) file 
+#
+# mhtml = WebPageArchiver::MhtmlGenerator.generate("https://rubygems.org/")
+# open("output.mht", "w+"){|f| f.write mhtml }
   class MhtmlGenerator
     include GeneratorHelpers
     attr_accessor :conf
@@ -151,11 +150,11 @@ require 'mime/types'
     end
   end
 
-  # generate mhtml file 
-  # == uri target uri
-  # return mhtml file
-  #mhtml = WebPageArchiver::MhtmlGenerator.generate("https://rubygems.org/")
-  #open("output.mht", "w+"){|f| f.write mhtml }
+
+  # == generate self-containing data-uri based html file (html) file 
+  #
+  # mhtml = WebPageArchiver::DataUriHtmlGenerator.generate("https://rubygems.org/")
+  # open("output.html", "w+"){|f| f.write mhtml }
     class DataUriHtmlGenerator
       include GeneratorHelpers
       

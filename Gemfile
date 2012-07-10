@@ -3,6 +3,7 @@ source "http://rubygems.org"
 # Example:
 #   gem "activesupport", ">= 2.3.5"
 gem "mime-types", ">= 0"
+gem "nokogiri", ">= 0"
 
 
 # Add dependencies to develop your gem here.
@@ -12,5 +13,4 @@ group :development do
   gem "bundler", "~> 1.0.0"
   gem "jeweler", "~> 1.6.0"
   gem "rcov", ">= 0"
-  gem "nokogiri", ">= 0"
 end
