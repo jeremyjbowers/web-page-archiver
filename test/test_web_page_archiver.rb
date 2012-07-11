@@ -26,5 +26,5 @@ class TestWebPageArchiver < Test::Unit::TestCase
     assert(mhtml.match('color: green;'))
     assert(mhtml.match('<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAACXBIWXMAABYlAAAWJQFJUiTwAAAAGXRFWHRTb2Z0d2'))
   end
-  
+
 end

@@ -276,7 +276,7 @@ require 'mime/types'
             tag.after("<style type=\"text/css\">#{v[:body]}</style>")
             tag.remove()
           else
-            # back to inline
+            # back to inline for non-script and style files...
             content_benc=Base64.encode64(v[:body]).gsub(/\n/,'')
             attribute=v[:attribute_name]
             content_type=v[:content_type]
