@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{web-page-archiver}
-  s.version = "0.0.3"
+  s.version = "0.0.4"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["takuya", "murb"]
-  s.date = %q{2012-06-25}
+  s.date = %q{2012-08-21}
   s.description = %q{web page archiver creates self-containing, one file, html or mhtml filese}
   s.email = %q{github.com+web-page-archiver@murb.nl}
   s.extra_rdoc_files = [
