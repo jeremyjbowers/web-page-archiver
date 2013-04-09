@@ -22,17 +22,29 @@ module WebPageArchiver
       @conf     = { :base64_except=>["html"] }
     end
     
-    # Creates a absolute URI-string
+    # Creates a absolute URI-string for referenced resources in base file name
     #
-    # @param [String, URI] base_filename_or_uri to join the path with
-    # @param [String] path to merge with
+    # @param [String, URI] base_filename_or_uri from where the resource is linked
+    # @param [String] path of the resource (relative or absolute) within the parent resource
     # @return [String] URI-string
     def join_uri(base_filename_or_uri, path)
       stream = open(base_filename_or_uri)
       joined = ""
       if stream.is_a? File
+        base_filename_or_uri = base_filename_or_uri.path if base_filename_or_uri.is_a? File
+        
+        windows_drive_matcher = /((.*):\/)/
+        windows_drive_match_data = base_filename_or_uri.match windows_drive_matcher
+        if windows_drive_match_data
+          base_filename_or_uri.gsub!(windows_drive_matcher,'WINDOWS.DRIVE/')
+        end
+        
         joined = URI::join("file://#{base_filename_or_uri}", path)
         joined = joined.to_s.gsub('file://','').gsub('file:','')
+        
+        if windows_drive_match_data
+          joined = joined.gsub('WINDOWS.DRIVE/',windows_drive_match_data[1])
+        end
       else
         joined = URI::join(base_filename_or_uri, path)
       end
