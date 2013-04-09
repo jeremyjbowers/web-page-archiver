@@ -36,7 +36,7 @@ module WebPageArchiver
         windows_drive_matcher = /((.*):\/)/
         windows_drive_match_data = base_filename_or_uri.match windows_drive_matcher
         if windows_drive_match_data
-          base_filename_or_uri.gsub!(windows_drive_matcher,'WINDOWS.DRIVE/')
+          base_filename_or_uri = base_filename_or_uri.gsub(windows_drive_matcher,'WINDOWS.DRIVE/')
         end
         
         joined = URI::join("file://#{base_filename_or_uri}", path)
