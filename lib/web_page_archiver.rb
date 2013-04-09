@@ -5,13 +5,14 @@
 #mhtml = WebPageArchiver::MhtmlGenerator.generate("https://rubygems.org/")
 #open("output.mht", "w+"){|f| f.write mhtml }
 module WebPageArchiver
-require 'nokogiri'
-require 'open-uri'
-require 'digest/md5'
-require 'stringio'
-require 'base64'
-require 'thread'
-require 'mime/types'
+  
+  require 'nokogiri'
+  require 'open-uri'
+  require 'digest/md5'
+  require 'stringio'
+  require 'base64'
+  require 'thread'
+  require 'mime/types'
 
   module GeneratorHelpers
     def initialize
@@ -20,7 +21,7 @@ require 'mime/types'
       @boundary = "mimepart_#{Digest::MD5.hexdigest(Time.now.to_s)}"
       @threads  = []
       @queue    = Queue.new
-      @conf     = { :base64_except=>["html"]}
+      @conf     = { :base64_except=>["html"] }
     end
     def join_uri(base_filename_or_uri, path)
       stream = open(base_filename_or_uri)
@@ -60,10 +61,10 @@ require 'mime/types'
     end
   end
 
-# == generate mhtml (mht) file 
-#
-# mhtml = WebPageArchiver::MhtmlGenerator.generate("https://rubygems.org/")
-# open("output.mht", "w+"){|f| f.write mhtml }
+  # == generate mhtml (mht) file 
+  #
+  # mhtml = WebPageArchiver::MhtmlGenerator.generate("https://rubygems.org/")
+  # open("output.mht", "w+"){|f| f.write mhtml }
   class MhtmlGenerator
     include GeneratorHelpers
     attr_accessor :conf
@@ -154,137 +155,132 @@ require 'mime/types'
   #
   # mhtml = WebPageArchiver::DataUriHtmlGenerator.generate("https://rubygems.org/")
   # open("output.html", "w+"){|f| f.write mhtml }
-    class DataUriHtmlGenerator
-      include GeneratorHelpers
-      
-      attr_accessor :conf
-      def DataUriHtmlGenerator.generate(uri)
-        generateror = DataUriHtmlGenerator.new
-        return generateror.convert(uri)
-      end
+  class DataUriHtmlGenerator
+    include GeneratorHelpers
+    
+    attr_accessor :conf
+    def DataUriHtmlGenerator.generate(uri)
+      generateror = DataUriHtmlGenerator.new
+      return generateror.convert(uri)
+    end
 
-      def convert(filename_or_uri)
-          @parser = Nokogiri::HTML(open(filename_or_uri))
-          @parser.search('img').each{|i| 
-              uri = i.attr('src');
-              uri = join_uri( filename_or_uri, uri).to_s
-              uid = Digest::MD5.hexdigest(uri)
-              @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'src'}
-              i.set_attribute('src',"cid:#{uid}")
-            }
-          #styles
-          @parser.search('link[rel=stylesheet]').each{|i|
-              uri = i.attr('href');
-              uri = join_uri( filename_or_uri, uri)
-              uid = Digest::MD5.hexdigest(uri)
-              @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'href'}
-              i.set_attribute('href',"cid:#{uid}")
-            }
-          #scripts
-          @parser.search('script').map{ |i|
-              next unless i.attr('src');
-              uri = i.attr('src');
-              uri = join_uri( filename_or_uri, uri)
-              uid = Digest::MD5.hexdigest(uri)
-              @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'src'}
-              i.set_attribute('src',"cid:#{uid}")
+    def convert(filename_or_uri)
+        @parser = Nokogiri::HTML(open(filename_or_uri))
+        @parser.search('img').each{|i| 
+            uri = i.attr('src');
+            uri = join_uri( filename_or_uri, uri).to_s
+            uid = Digest::MD5.hexdigest(uri)
+            @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'src'}
+            i.set_attribute('src',"cid:#{uid}")
           }
-          self.set_contents
-          return @parser.to_s
-      end
+        #styles
+        @parser.search('link[rel=stylesheet]').each{|i|
+            uri = i.attr('href');
+            uri = join_uri( filename_or_uri, uri)
+            uid = Digest::MD5.hexdigest(uri)
+            @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'href'}
+            i.set_attribute('href',"cid:#{uid}")
+          }
+        #scripts
+        @parser.search('script').map{ |i|
+            next unless i.attr('src');
+            uri = i.attr('src');
+            uri = join_uri( filename_or_uri, uri)
+            uid = Digest::MD5.hexdigest(uri)
+            @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'src'}
+            i.set_attribute('src',"cid:#{uid}")
+        }
+        self.set_contents
+        return @parser.to_s
+    end
 
-      def set_contents
-        #prepeare_queue
-        @contents.each{|k,v| @queue.push k}
-        #start download threads
-        self.start_download_thread
-        # wait until download finished.
-        @threads.each{|t|t.join}
-        @contents.each do |k,v|
+    def set_contents
+      #prepeare_queue
+      @contents.each{|k,v| @queue.push k}
+      #start download threads
+      self.start_download_thread
+      # wait until download finished.
+      @threads.each{|t|t.join}
+      @contents.each do |k,v|
+        content_benc=Base64.encode64(v[:body]).gsub(/\n/,'')
+        tag=v[:parser_ref]
+        attribute=v[:attribute_name]
+        content_type=v[:content_type]
+        tag.set_attribute(attribute,"data:#{content_type};base64,#{content_benc}")
+      end
+    end 
+  end
+
+
+  # == generate self-containing all-inline html file (html) file 
+  #
+  # mhtml = WebPageArchiver::InlineHtmlGenerator.generate("https://rubygems.org/")
+  # open("output.html", "w+"){|f| f.write mhtml }
+  class InlineHtmlGenerator
+    include GeneratorHelpers
+    
+    attr_accessor :conf
+    def InlineHtmlGenerator.generate(uri)
+      generateror = InlineHtmlGenerator.new
+      return generateror.convert(uri)
+    end
+
+    def convert(filename_or_uri)
+        @parser = Nokogiri::HTML(open(filename_or_uri))
+        @parser.search('img').each{|i| 
+            uri = i.attr('src');
+            uri = join_uri( filename_or_uri, uri).to_s
+            uid = Digest::MD5.hexdigest(uri)
+            @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'src'}
+            i.set_attribute('src',"cid:#{uid}")
+          }
+        #styles
+        @parser.search('link[rel=stylesheet]').each{|i|
+            uri = i.attr('href');
+            uri = join_uri( filename_or_uri, uri)
+            uid = Digest::MD5.hexdigest(uri)
+            @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'href'}
+            i.set_attribute('href',"cid:#{uid}")
+          }
+        #scripts
+        @parser.search('script').map{ |i|
+            next unless i.attr('src');
+            uri = i.attr('src');
+            uri = join_uri( filename_or_uri, uri)
+            uid = Digest::MD5.hexdigest(uri)
+            @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'src'}
+            i.set_attribute('src',"cid:#{uid}")
+        }
+        self.set_contents
+        return @parser.to_s
+    end
+
+    def set_contents
+      #prepeare_queue
+      @contents.each{|k,v| @queue.push k}
+      #start download threads
+      self.start_download_thread
+      # wait until download finished.
+      @threads.each{|t|t.join}
+      @contents.each do |k,v|
+        tag=v[:parser_ref]
+        if tag.name == "script"
           content_benc=Base64.encode64(v[:body]).gsub(/\n/,'')
-          tag=v[:parser_ref]
+          attribute=v[:attribute_name]
+          content_type=v[:content_type]
+          tag.content=v[:body]
+          tag.remove_attribute(v[:attribute_name])
+        elsif tag.name == "link" and v[:content_type]="text/css"
+          tag.after("<style type=\"text/css\">#{v[:body]}</style>")
+          tag.remove()
+        else
+          # back to inline for non-script and style files...
+          content_benc=Base64.encode64(v[:body]).gsub(/\n/,'')
           attribute=v[:attribute_name]
           content_type=v[:content_type]
           tag.set_attribute(attribute,"data:#{content_type};base64,#{content_benc}")
         end
       end
-      
     end
-
-
-    # == generate self-containing all-inline html file (html) file 
-    #
-    # mhtml = WebPageArchiver::InlineHtmlGenerator.generate("https://rubygems.org/")
-    # open("output.html", "w+"){|f| f.write mhtml }
-    class InlineHtmlGenerator
-      include GeneratorHelpers
-      
-      attr_accessor :conf
-      def InlineHtmlGenerator.generate(uri)
-        generateror = InlineHtmlGenerator.new
-        return generateror.convert(uri)
-      end
-
-      def convert(filename_or_uri)
-          @parser = Nokogiri::HTML(open(filename_or_uri))
-          @parser.search('img').each{|i| 
-              uri = i.attr('src');
-              uri = join_uri( filename_or_uri, uri).to_s
-              uid = Digest::MD5.hexdigest(uri)
-              @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'src'}
-              i.set_attribute('src',"cid:#{uid}")
-            }
-          #styles
-          @parser.search('link[rel=stylesheet]').each{|i|
-              uri = i.attr('href');
-              uri = join_uri( filename_or_uri, uri)
-              uid = Digest::MD5.hexdigest(uri)
-              @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'href'}
-              i.set_attribute('href',"cid:#{uid}")
-            }
-          #scripts
-          @parser.search('script').map{ |i|
-              next unless i.attr('src');
-              uri = i.attr('src');
-              uri = join_uri( filename_or_uri, uri)
-              uid = Digest::MD5.hexdigest(uri)
-              @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'src'}
-              i.set_attribute('src',"cid:#{uid}")
-          }
-          self.set_contents
-          return @parser.to_s
-      end
-
-      def set_contents
-        #prepeare_queue
-        @contents.each{|k,v| @queue.push k}
-        #start download threads
-        self.start_download_thread
-        # wait until download finished.
-        @threads.each{|t|t.join}
-        @contents.each do |k,v|
-          tag=v[:parser_ref]
-          if tag.name == "script"
-            content_benc=Base64.encode64(v[:body]).gsub(/\n/,'')
-          
-            attribute=v[:attribute_name]
-            content_type=v[:content_type]
-            tag.content=v[:body]
-            tag.remove_attribute(v[:attribute_name])
-          elsif tag.name == "link" and v[:content_type]="text/css"
-            tag.after("<style type=\"text/css\">#{v[:body]}</style>")
-            tag.remove()
-          else
-            # back to inline for non-script and style files...
-            content_benc=Base64.encode64(v[:body]).gsub(/\n/,'')
-            attribute=v[:attribute_name]
-            content_type=v[:content_type]
-            tag.set_attribute(attribute,"data:#{content_type};base64,#{content_benc}")
-            
-          end
-        end
-      end
-      
-    end
-
+  end
 end
