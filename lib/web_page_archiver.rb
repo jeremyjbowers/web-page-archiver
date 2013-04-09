@@ -5,7 +5,6 @@
 #mhtml = WebPageArchiver::MhtmlGenerator.generate("https://rubygems.org/")
 #open("output.mht", "w+"){|f| f.write mhtml }
 module WebPageArchiver
-require 'rubygems'
 require 'nokogiri'
 require 'open-uri'
 require 'digest/md5'
