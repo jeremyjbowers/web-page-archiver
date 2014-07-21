@@ -124,13 +124,13 @@ module WebPageArchiver
         @src.puts ""
         #imgs
         @parser.search('img').each{|i|
-            if not i.attr('src')include?("pixel.quantserve.com")
               uri = i.attr('src');
               uri = join_uri( filename_or_uri, uri).to_s
               uid = Digest::MD5.hexdigest(uri)
-              @contents[uid] = {:uri=>uri}
+              if not i.attr('src').to_s.include?("pixel.quantserve.com")
+                @contents[uid] = {:uri=>uri}
+              end
               i.set_attribute('src',"cid:#{uid}")
-            end
           }
         #styles
         @parser.search('link[rel=stylesheet]').each{|i|
