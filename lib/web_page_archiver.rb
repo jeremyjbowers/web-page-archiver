@@ -127,6 +127,7 @@ module WebPageArchiver
               uri = i.attr('src');
               uri = join_uri( filename_or_uri, uri).to_s
               uid = Digest::MD5.hexdigest(uri)
+              puts i.attr('src').to_s
               if not i.attr('src').to_s.include?("pixel.quantserve.com")
                 @contents[uid] = {:uri=>uri}
               end
