@@ -15,9 +15,9 @@ module WebPageArchiver
       @contents = {}
       @src = StringIO.new
       @boundary = "mimepart_#{Digest::MD5.hexdigest(Time.now.to_s)}"
-      @threads  = []
-      @queue    = Queue.new
-      @conf     = { :base64_except=>["html"] }
+      @threads = []
+      @queue = Queue.new
+      @conf = { :base64_except=>["html"] }
     end
 
     # Creates a absolute URI-string for referenced resources in base file name
@@ -50,7 +50,7 @@ module WebPageArchiver
       return joined.to_s
     end
 
-    # Determines the conttent type of a file or download
+    # Determines the contenttype of a file or download
     #
     # @param [File,URI] object to test
     # @return [String] mime-type / content type
@@ -103,8 +103,8 @@ module WebPageArchiver
     # @return [String] text blob containing the result
     #
     def DataUriHtmlGenerator.generate(filename_or_uri)
-      generateror = DataUriHtmlGenerator.new
-      return generateror.convert(filename_or_uri)
+      g = DataUriHtmlGenerator.new
+      return g.convert(filename_or_uri)
     end
 
     # convert object at uri to self-contained text-file
@@ -151,13 +151,7 @@ module WebPageArchiver
       @contents.each{ |k,v| @queue.push k }
       self.start_download_thread
       @threads.each{ |t| t.join }
-      @contents.each { |k,v|
-        content_benc=Base64.encode64(v[:body]).gsub(/\n/,'')
-        tag=v[:parser_ref]
-        attribute=v[:attribute_name]
-        content_type=v[:content_type]
-        tag.set_attribute(attribute,"data:#{content_type};base64,#{content_benc}")
-      }
+      @contents.each { |k,v| v[:parser_ref].set_attribute(v[:attribute_name],"data:#{v[:content_type]};base64,#{Base64.encode64(v[:body]).gsub(/\n/,'')}") }
     end
 
   end
