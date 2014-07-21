@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 module WebPageArchiver
-  
+
   require 'nokogiri'
   require 'open-uri'
   require 'digest/md5'
@@ -21,7 +21,7 @@ module WebPageArchiver
       @queue    = Queue.new
       @conf     = { :base64_except=>["html"] }
     end
-    
+
     # Creates a absolute URI-string for referenced resources in base file name
     #
     # @param [String, URI] base_filename_or_uri from where the resource is linked
@@ -32,25 +32,28 @@ module WebPageArchiver
       joined = ""
       if stream.is_a? File
         base_filename_or_uri = base_filename_or_uri.path if base_filename_or_uri.is_a? File
-        
+
         windows_drive_matcher = /((.*):\/)/
         windows_drive_match_data = base_filename_or_uri.match windows_drive_matcher
         if windows_drive_match_data
           base_filename_or_uri = base_filename_or_uri.gsub(windows_drive_matcher,'WINDOWS.DRIVE/')
         end
-        
+
         joined = URI::join("file://#{base_filename_or_uri}", path)
         joined = joined.to_s.gsub('file://','').gsub('file:','')
-        
+
         if windows_drive_match_data
           joined = joined.gsub('WINDOWS.DRIVE/',windows_drive_match_data[1])
         end
       else
         joined = URI::join(base_filename_or_uri, path)
       end
+      if joined.start_with?("//")
+        joined = "http:" + joined
+      end
       return joined.to_s
     end
-    
+
     # Determines the conttent type of a file or download
     #
     # @param [File,URI] object to test
@@ -62,7 +65,7 @@ module WebPageArchiver
         return object.meta["content-type"]
       end
     end
-    
+
     # Processes the download queue
     #
     # @param [Integer] num number of threads
@@ -82,7 +85,7 @@ module WebPageArchiver
       }
       return @threads
     end
-    
+
     # Tests wether all the required content has been downloaded
     def download_finished?
       @contents.find{|k,v| v[:body] == nil } == nil
@@ -93,23 +96,23 @@ module WebPageArchiver
   class MhtmlGenerator
     include GeneratorHelpers
     attr_accessor :conf
-    
+
     # generate mhtml (mht) file without instantiating a MhtmlGenerator object
     #
     # mhtml = WebPageArchiver::MhtmlGenerator.generate("https://rubygems.org/")
     # open("output.mht", "w+"){|f| f.write mhtml }
-    # 
+    #
     # @param [String, URI] filename_or_uri to test for
     # @return [String] text blob containing the result
     def MhtmlGenerator.generate(filename_or_uri)
       generator = MhtmlGenerator.new
       return generator.convert(filename_or_uri)
     end
-    
+
     # convert object at uri to self-contained text-file
-    # 
+    #
     # @param [String, URI] filename_or_uri to test for
-    # @return [String] text blob containing the result    
+    # @return [String] text blob containing the result
     def convert(filename_or_uri)
         f = open(filename_or_uri)
         html = f.read
@@ -123,7 +126,7 @@ module WebPageArchiver
         @src.puts "mime mhtml content"
         @src.puts ""
         #imgs
-        @parser.search('img').each{|i| 
+        @parser.search('img').each{|i|
             uri = i.attr('src');
             uri = join_uri( filename_or_uri, uri).to_s
             uid = Digest::MD5.hexdigest(uri)
@@ -164,8 +167,8 @@ module WebPageArchiver
         @src.rewind
         return @src.read
     end
-    
-    # adds mime-parts 
+
+    # adds mime-parts
     def attach_contents
       #prepeare_queue
       @contents.each{|k,v| @queue.push k}
@@ -175,7 +178,7 @@ module WebPageArchiver
       @threads.each{|t|t.join}
       @contents.each{|k,v|self.add_html_content(k)}
     end
-    
+
     # helper method to generate proper mime part headers
     #
     # param [String] cid content ID
@@ -183,7 +186,7 @@ module WebPageArchiver
     def add_html_content(cid)
       filename = File.basename(URI(@contents[cid][:uri]).path)
       @src.puts "--#{@boundary}"
-      @src.puts "Content-Disposition: inline; filename=" + filename 
+      @src.puts "Content-Disposition: inline; filename=" + filename
       @src.puts "Content-Type: #{@contents[cid][:content_type]}"
       @src.puts "Content-Location: #{@contents[cid][:uri]}"
       @src.puts "Content-Transfer-Encoding: Base64"
@@ -195,17 +198,17 @@ module WebPageArchiver
     end
   end
 
-  # self-containing data-uri based html 
+  # self-containing data-uri based html
   class DataUriHtmlGenerator
     include GeneratorHelpers
-    
+
     attr_accessor :conf
-    
+
     # generate self-containing data-uri based html file (html) file without instantiating a MhtmlGenerator object
     #
     # mhtml = WebPageArchiver::DataUriHtmlGenerator.generate("https://rubygems.org/")
     # open("output.html", "w+"){|f| f.write mhtml }
-    # 
+    #
     # @param [String, URI] filename_or_uri to test for
     # @return [String] text blob containing the result
     def DataUriHtmlGenerator.generate(filename_or_uri)
@@ -214,12 +217,12 @@ module WebPageArchiver
     end
 
     # convert object at uri to self-contained text-file
-    # 
+    #
     # @param [String, URI] filename_or_uri to test for
-    # @return [String] text blob containing the result    
+    # @return [String] text blob containing the result
     def convert(filename_or_uri)
         @parser = Nokogiri::HTML(open(filename_or_uri))
-        @parser.search('img').each{|i| 
+        @parser.search('img').each{|i|
             uri = i.attr('src');
             uri = join_uri( filename_or_uri, uri).to_s
             uid = Digest::MD5.hexdigest(uri)
@@ -262,20 +265,20 @@ module WebPageArchiver
         content_type=v[:content_type]
         tag.set_attribute(attribute,"data:#{content_type};base64,#{content_benc}")
       end
-    end 
+    end
   end
 
   # self-containing all-inline based html
   class InlineHtmlGenerator
     include GeneratorHelpers
-    
+
     attr_accessor :conf
-    
+
     # generate self-containing all-inline based html file (html) file without instantiating a MhtmlGenerator object
     #
     # mhtml = WebPageArchiver::InlineHtmlGenerator.generate("https://rubygems.org/")
     # open("output.html", "w+"){|f| f.write mhtml }
-    # 
+    #
     # @param [String, URI] filename_or_uri to test for
     # @return [String] text blob containing the result
     def InlineHtmlGenerator.generate(filename_or_uri)
@@ -284,12 +287,12 @@ module WebPageArchiver
     end
 
     # convert object at uri to self-contained text-file
-    # 
+    #
     # @param [String, URI] filename_or_uri to test for
-    # @return [String] text blob containing the result    
+    # @return [String] text blob containing the result
     def convert(filename_or_uri)
         @parser = Nokogiri::HTML(open(filename_or_uri))
-        @parser.search('img').each{|i| 
+        @parser.search('img').each{|i|
             uri = i.attr('src');
             uri = join_uri( filename_or_uri, uri).to_s
             uid = Digest::MD5.hexdigest(uri)
