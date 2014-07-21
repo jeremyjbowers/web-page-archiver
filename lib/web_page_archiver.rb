@@ -28,7 +28,6 @@ module WebPageArchiver
     # @param [String] path of the resource (relative or absolute) within the parent resource
     # @return [String] URI-string
     def join_uri(base_filename_or_uri, path)
-      puts path
       stream = open(base_filename_or_uri)
       joined = ""
       if stream.is_a? File
@@ -125,11 +124,13 @@ module WebPageArchiver
         @src.puts ""
         #imgs
         @parser.search('img').each{|i|
-            uri = i.attr('src');
-            uri = join_uri( filename_or_uri, uri).to_s
-            uid = Digest::MD5.hexdigest(uri)
-            @contents[uid] = {:uri=>uri}
-            i.set_attribute('src',"cid:#{uid}")
+            if not  i.attr('src')include?("pixel.quantserve.com")
+              uri = i.attr('src');
+              uri = join_uri( filename_or_uri, uri).to_s
+              uid = Digest::MD5.hexdigest(uri)
+              @contents[uid] = {:uri=>uri}
+              i.set_attribute('src',"cid:#{uid}")
+            end
           }
         #styles
         @parser.search('link[rel=stylesheet]').each{|i|
