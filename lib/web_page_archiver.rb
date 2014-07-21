@@ -71,12 +71,18 @@ module WebPageArchiver
     def start_download_thread(num=5)
       num.times{
         t = Thread.start{
+          @body = ""
           while(@queue.empty? == false)
             k = @queue.pop
             next if @contents[k][:body] != nil
             v = @contents[k][:uri]
-            f = open(v)
-            @contents[k] = @contents[k].merge({ :body=>f.read, :uri=> v, :content_type=> content_type(f) })
+            begin
+              f = open(v)
+              @body = f.read
+            rescue => ex
+              puts ex
+            end
+            @contents[k] = @contents[k].merge({ :body=>@body, :uri=> v, :content_type=> content_type(f) })
           end
         }
         @threads.push t
@@ -116,9 +122,6 @@ module WebPageArchiver
         @parser = Nokogiri::HTML(open(filename_or_uri))
 
         @parser.search('img').each { |i|
-
-          puts i.attr('src')
-
           uri = i.attr('src');
           uri = join_uri( filename_or_uri, uri).to_s
           uid = Digest::MD5.hexdigest(uri)
