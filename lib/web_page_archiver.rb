@@ -46,10 +46,10 @@ module WebPageArchiver
           joined = joined.gsub('WINDOWS.DRIVE/',windows_drive_match_data[1])
         end
       else
+        if base_filename_or_uri.start_with?("//")
+          base_filename_or_uri = "http:#{base_filename_or_uri}"
+        end
         joined = URI::join(base_filename_or_uri, path)
-      end
-      if joined.start_with?("//")
-        joined = "http:" + joined
       end
       return joined.to_s
     end
