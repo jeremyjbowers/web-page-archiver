@@ -28,6 +28,7 @@ module WebPageArchiver
     # @param [String] path of the resource (relative or absolute) within the parent resource
     # @return [String] URI-string
     def join_uri(base_filename_or_uri, path)
+      puts base_filename_or_uri
       stream = open(base_filename_or_uri)
       joined = ""
       if stream.is_a? File
@@ -46,9 +47,6 @@ module WebPageArchiver
           joined = joined.gsub('WINDOWS.DRIVE/',windows_drive_match_data[1])
         end
       else
-        if base_filename_or_uri.start_with?("//")
-          base_filename_or_uri = "http:#{base_filename_or_uri}"
-        end
         joined = URI::join(base_filename_or_uri, path)
       end
       return joined.to_s
