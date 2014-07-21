@@ -224,10 +224,8 @@ module WebPageArchiver
             uri = i.attr('src');
             uri = join_uri( filename_or_uri, uri).to_s
             uid = Digest::MD5.hexdigest(uri)
-            if not i.attr('src').to_s.include?("pixel.quantserve.com")
-              @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'src'}
-              i.set_attribute('src',"cid:#{uid}")
-            end
+            @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'src'}
+            i.set_attribute('src',"cid:#{uid}")
           }
         #styles
         @parser.search('link[rel=stylesheet]').each{|i|
@@ -296,8 +294,10 @@ module WebPageArchiver
             uri = i.attr('src');
             uri = join_uri( filename_or_uri, uri).to_s
             uid = Digest::MD5.hexdigest(uri)
-            @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'src'}
-            i.set_attribute('src',"cid:#{uid}")
+            if not i.attr('src').to_s.include?("pixel.quantserve.com")
+              @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'src'}
+              i.set_attribute('src',"cid:#{uid}")
+            end
           }
         #styles
         @parser.search('link[rel=stylesheet]').each{|i|
