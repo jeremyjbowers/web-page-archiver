@@ -28,7 +28,7 @@ module WebPageArchiver
     # @param [String] path of the resource (relative or absolute) within the parent resource
     # @return [String] URI-string
     def join_uri(base_filename_or_uri, path)
-      puts base_filename_or_uri
+      puts path
       stream = open(base_filename_or_uri)
       joined = ""
       if stream.is_a? File
