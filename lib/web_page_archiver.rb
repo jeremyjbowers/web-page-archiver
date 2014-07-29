@@ -79,7 +79,7 @@ module WebPageArchiver
             next if @contents[k][:body] != nil
 
             v = @contents[k][:uri]
-            print " .".colorize(:yellow)
+            print " .".colorize(:green)
 
             f = ""
 
