@@ -56,11 +56,11 @@ module WebPageArchiver
     # @param [File,URI] object to test
     # @return [String] mime-type / content type
     #
-    def content_type(object)
-      if object.is_a? File
-        return MIME::Types.type_for(object.path).first
+    def content_type(obj)
+      if obj.is_a? File
+        return MIME::Types.type_for(obj.path).first
       else
-        return object.meta["content-type"]
+        return obj.headers_hash["content-type"]
       end
     end
 
@@ -83,13 +83,13 @@ module WebPageArchiver
             f = ""
 
             begin
-              f = Typhoeus.get(v).body.to_s
+              f = Typhoeus.get(v)
             rescue => ex
               print "\tRetrying. Exception: #{ex}"
               sleep(3.seconds)
-              f = Typhoeus.get(v).body.to_s
+              f = Typhoeus.get(v)
             end
-            @contents[k] = @contents[k].merge({ :body=>f, :uri=> v, :content_type=> content_type(f) })
+            @contents[k] = @contents[k].merge({ :body=>f.body.to_s, :uri=> v, :content_type=> content_type(f) })
           end
         }
         @threads.push t
