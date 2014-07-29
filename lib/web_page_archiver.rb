@@ -80,14 +80,16 @@ module WebPageArchiver
             v = @contents[k][:uri]
             puts " \t-> #{v}"
 
+            f = ""
+
             begin
-              f = Typhoeus.get(v)
+              f = Typhoeus.get(v).body.to_s
             rescue => ex
               print "\tRetrying. Exception: #{ex}"
               sleep(3.seconds)
-              f = Typhoeus.get(v)
+              f = Typhoeus.get(v).body.to_s
             end
-            @contents[k] = @contents[k].merge({ :body=>f.body, :uri=> v, :content_type=> content_type(f) })
+            @contents[k] = @contents[k].merge({ :body=>f, :uri=> v, :content_type=> content_type(f) })
           end
         }
         @threads.push t
