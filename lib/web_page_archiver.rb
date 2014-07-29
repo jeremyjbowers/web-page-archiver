@@ -86,7 +86,7 @@ module WebPageArchiver
             begin
               f = Typhoeus.get(v)
             rescue => ex
-              print "!".colorize(:red)
+              print "R!".colorize(:red)
               sleep(3.seconds)
               f = Typhoeus.get(v)
             end
