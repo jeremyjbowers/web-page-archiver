@@ -33,7 +33,8 @@ module WebPageArchiver
       begin
         stream = open(base_filename_or_uri)
       rescue => ex
-        print "!H".colorize(:red)
+        print "!R".colorize(:red)
+        print " \"#{ex}\" ".colorize(:yellow)
         sleep(3.seconds)
         stream = open(base_filename_or_uri)
       end
@@ -95,6 +96,7 @@ module WebPageArchiver
               f = Typhoeus.get(v)
             rescue => ex
               print "R!".colorize(:red)
+              print " \"#{ex}\" ".colorize(:yellow)
               sleep(3.seconds)
               f = Typhoeus.get(v)
             end
