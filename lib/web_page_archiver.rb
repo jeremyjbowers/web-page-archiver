@@ -149,7 +149,10 @@ module WebPageArchiver
 
     def set_contents
       @contents.each{ |k,v| @queue.push k }
-      self.start_download_thread
+      # self.start_download_thread
+
+      puts @queue
+
       @threads.each{ |t| t.join }
       @contents.each { |k,v|
         content_benc = Base64.encode64(v[:body]).gsub(/\n/,'')

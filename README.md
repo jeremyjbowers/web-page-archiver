@@ -5,7 +5,7 @@ mht is known as mhtml that internet explorer's web page archive.
 this package can make web archives from local files and URI's
 
 ## Contributing to web page archiver
- 
+
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet
 * Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it
 * Fork the project
@@ -18,4 +18,3 @@ this package can make web archives from local files and URI's
 
 Copyright (c) 2012 murb. See LICENSE.txt for further details.
 Portions copyright (c) 2011 takuya. See LICENSE.txt for further details.
-
