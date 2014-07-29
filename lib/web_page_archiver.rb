@@ -90,27 +90,24 @@ module WebPageArchiver
       2.times{
         t = Thread.start{
           while(@queue.empty? == false)
-            retry_counter = 0
             k = @queue.pop
             next if @contents[k][:body] != nil
-
             v = @contents[k][:uri]
-            print "+".colorize(:green)
-
             f = ""
 
             begin
               f = Typhoeus.get(v)
+              print "+".colorize(:green)
             rescue => ex
               print "R!".colorize(:red)
-              print " \"#{ex}\" ".gsub("\n", " ").gsub("\r", " ").colorize(:yellow)
-              sleep(3.seconds)
+              print " \"#{ex}\" #{v}".gsub("\n", " ").gsub("\r", " ").colorize(:yellow)
+              sleep(10.seconds)
               begin
                 f = Typhoeus.get(v)
               rescue => ex
                 print "R!".colorize(:red)
-                print " \"#{ex}\" ".gsub("\n", " ").gsub("\r", " ").colorize(:yellow)
-                sleep(10.seconds)
+                print " \"#{ex}\" #{v}".gsub("\n", " ").gsub("\r", " ").colorize(:yellow)
+                sleep(15.seconds)
                 f = Typhoeus.get(v)
               end
             end
