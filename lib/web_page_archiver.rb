@@ -87,7 +87,7 @@ module WebPageArchiver
               sleep(3.seconds)
               f = Typhoeus.get(v)
             end
-            @contents[k] = @contents[k].merge({ :body=>f.read, :uri=> v, :content_type=> content_type(f) })
+            @contents[k] = @contents[k].merge({ :body=>f.body, :uri=> v, :content_type=> content_type(f) })
           end
         }
         @threads.push t
