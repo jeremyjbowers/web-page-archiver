@@ -68,8 +68,8 @@ module WebPageArchiver
     # @param [Integer] num number of threads
     # @return [Array<Thread>] the ruby-threads opened
     #
-    def start_download_thread(num=4)
-      num.times{
+    def start_download_thread
+      2.times{
         t = Thread.start{
           while(@queue.empty? == false)
             k = @queue.pop
@@ -149,10 +149,7 @@ module WebPageArchiver
 
     def set_contents
       @contents.each{ |k,v| @queue.push k }
-      # self.start_download_thread
-
-      puts @queue
-
+      self.start_download_thread
       @threads.each{ |t| t.join }
       @contents.each { |k,v|
         content_benc = Base64.encode64(v[:body]).gsub(/\n/,'')
