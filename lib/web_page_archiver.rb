@@ -36,6 +36,7 @@ module WebPageArchiver
         print "!H".colorize(:red)
         sleep(3.seconds)
         stream = open(base_filename_or_uri)
+      end
 
       joined = ""
       if stream.is_a? File
@@ -141,6 +142,7 @@ module WebPageArchiver
         print "!H".colorize(:red)
         sleep(3.seconds)
         base_file = Typhoeus.get(filename_or_uri)
+      end
 
       @parser = Nokogiri::HTML(base_file.body.to_s)
 
