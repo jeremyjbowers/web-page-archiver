@@ -29,7 +29,14 @@ module WebPageArchiver
     # @return [String] URI-string
     #
     def join_uri(base_filename_or_uri, path)
-      stream = open(base_filename_or_uri)
+      stream = ""
+      begin
+        stream = open(base_filename_or_uri)
+      rescue => ex
+        print "!H".colorize(:red)
+        sleep(3.seconds)
+        stream = open(base_filename_or_uri)
+
       joined = ""
       if stream.is_a? File
         base_filename_or_uri = base_filename_or_uri.path if base_filename_or_uri.is_a? File
@@ -127,38 +134,46 @@ module WebPageArchiver
     # @return [String] text blob containing the result
     #
     def convert(filename_or_uri)
-        @parser = Nokogiri::HTML(open(filename_or_uri))
+      base_file = ""
+      begin
+        base_file = Typhoeus.get(filename_or_uri)
+      rescue => ex
+        print "!H".colorize(:red)
+        sleep(3.seconds)
+        base_file = Typhoeus.get(filename_or_uri)
 
-        @parser.search('img').each { |i|
-          uri = i.attr('src')
-          uri = URI.encode(uri)
-          uri = join_uri( filename_or_uri, uri).to_s
-          uid = Digest::MD5.hexdigest(uri)
-          @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'src'}
-          i.set_attribute('src',"cid:#{uid}")
-        }
+      @parser = Nokogiri::HTML(base_file.body.to_s)
 
-        @parser.search('link[rel=stylesheet]').each { |i|
-          uri = i.attr('href')
-          uri = URI.encode(uri)
-          uri = join_uri( filename_or_uri, uri)
-          uid = Digest::MD5.hexdigest(uri)
-          @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'href'}
-          i.set_attribute('href',"cid:#{uid}")
-        }
+      @parser.search('img').each { |i|
+        uri = i.attr('src')
+        uri = URI.encode(uri)
+        uri = join_uri( filename_or_uri, uri).to_s
+        uid = Digest::MD5.hexdigest(uri)
+        @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'src'}
+        i.set_attribute('src',"cid:#{uid}")
+      }
 
-        @parser.search('script').each { |i|
-          next unless i.attr('src')
-          uri = i.attr('src')
-          uri = URI.encode(uri)
-          uri = join_uri( filename_or_uri, uri)
-          uid = Digest::MD5.hexdigest(uri)
-          @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'src'}
-          i.set_attribute('src',"cid:#{uid}")
-        }
+      @parser.search('link[rel=stylesheet]').each { |i|
+        uri = i.attr('href')
+        uri = URI.encode(uri)
+        uri = join_uri( filename_or_uri, uri)
+        uid = Digest::MD5.hexdigest(uri)
+        @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'href'}
+        i.set_attribute('href',"cid:#{uid}")
+      }
 
-        self.set_contents
-        return @parser.to_s
+      @parser.search('script').each { |i|
+        next unless i.attr('src')
+        uri = i.attr('src')
+        uri = URI.encode(uri)
+        uri = join_uri( filename_or_uri, uri)
+        uid = Digest::MD5.hexdigest(uri)
+        @contents[uid] = {:uri=>uri, :parser_ref=>i, :attribute_name=>'src'}
+        i.set_attribute('src',"cid:#{uid}")
+      }
+
+      self.set_contents
+      return @parser.to_s
     end
 
     def set_contents
