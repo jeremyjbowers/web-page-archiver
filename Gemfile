@@ -3,6 +3,7 @@ source "http://rubygems.org"
 gem "mime-types", ">= 0"
 gem "nokogiri", ">= 0"
 gem "typhoeus"
+gem "colorize"
 
 group :development do
   gem "shoulda", ">= 0"

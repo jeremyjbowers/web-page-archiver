@@ -10,6 +10,7 @@ module WebPageArchiver
   require 'thread'
   require 'mime/types'
   require 'typhoeus'
+  require 'colorize'
 
   module GeneratorHelpers
     def initialize
@@ -78,14 +79,14 @@ module WebPageArchiver
             next if @contents[k][:body] != nil
 
             v = @contents[k][:uri]
-            puts " \t-> #{v}"
+            puts "\t-> #{v}".colorize(:gray)
 
             f = ""
 
             begin
               f = Typhoeus.get(v)
             rescue => ex
-              print "\tRetrying. Exception: #{ex}"
+              print "\tRetrying. Exception: #{ex}".colorize(:red)
               sleep(3.seconds)
               f = Typhoeus.get(v)
             end
