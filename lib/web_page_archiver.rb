@@ -9,6 +9,7 @@ module WebPageArchiver
   require 'base64'
   require 'thread'
   require 'mime/types'
+  require 'typhoeus'
 
   module GeneratorHelpers
     def initialize
@@ -76,7 +77,7 @@ module WebPageArchiver
             next if @contents[k][:body] != nil
             v = @contents[k][:uri]
             puts "  -> #{v}"
-            f = open(v)
+            f = Typhoeus.get(v)
             @contents[k] = @contents[k].merge({ :body=>f.read, :uri=> v, :content_type=> content_type(f) })
           end
         }
