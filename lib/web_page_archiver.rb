@@ -33,10 +33,17 @@ module WebPageArchiver
       begin
         stream = open(base_filename_or_uri)
       rescue => ex
-        print "!R".colorize(:red)
+        print "!I1".colorize(:red)
         print " \"#{ex}\" ".gsub("\n", " ").gsub("\r", " ").colorize(:yellow)
         sleep(3.seconds)
-        stream = open(base_filename_or_uri)
+        begin
+          stream = open(base_filename_or_uri)
+        rescue => ex
+          print "!I2".colorize(:red)
+          print " \"#{ex}\" ".gsub("\n", " ").gsub("\r", " ").colorize(:yellow)
+          sleep(10.seconds)
+          stream = open(base_filename_or_uri)
+        end
       end
 
       joined = ""
@@ -98,7 +105,14 @@ module WebPageArchiver
               print "R!".colorize(:red)
               print " \"#{ex}\" ".gsub("\n", " ").gsub("\r", " ").colorize(:yellow)
               sleep(3.seconds)
-              f = Typhoeus.get(v)
+              begin
+                f = Typhoeus.get(v)
+              rescue => ex
+                print "R!".colorize(:red)
+                print " \"#{ex}\" ".gsub("\n", " ").gsub("\r", " ").colorize(:yellow)
+                sleep(10.seconds)
+                f = Typhoeus.get(v)
+              end
             end
             @contents[k] = @contents[k].merge({ :body=>f.body.to_s, :uri=> v, :content_type=> content_type(f) })
           end
