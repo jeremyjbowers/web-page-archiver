@@ -79,14 +79,14 @@ module WebPageArchiver
             next if @contents[k][:body] != nil
 
             v = @contents[k][:uri]
-            print " .".colorize(:green)
+            puts "+".colorize(:green)
 
             f = ""
 
             begin
               f = Typhoeus.get(v)
             rescue => ex
-              print " .".colorize(:red)
+              puts "!".colorize(:red)
               sleep(3.seconds)
               f = Typhoeus.get(v)
             end
