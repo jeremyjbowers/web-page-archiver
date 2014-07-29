@@ -73,11 +73,20 @@ module WebPageArchiver
       2.times{
         t = Thread.start{
           while(@queue.empty? == false)
+            retry_counter = 0
             k = @queue.pop
             next if @contents[k][:body] != nil
+
             v = @contents[k][:uri]
-            puts "  -> #{v}"
-            f = Typhoeus.get(v)
+            puts " \t-> #{v}"
+
+            begin
+              f = Typhoeus.get(v)
+            rescue => ex
+              print "\tRetrying. Exception: #{ex}"
+              sleep(3.seconds)
+              f = Typhoeus.get(v)
+            end
             @contents[k] = @contents[k].merge({ :body=>f.read, :uri=> v, :content_type=> content_type(f) })
           end
         }
