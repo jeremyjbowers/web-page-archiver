@@ -68,7 +68,7 @@ module WebPageArchiver
     # @param [Integer] num number of threads
     # @return [Array<Thread>] the ruby-threads opened
     #
-    def start_download_thread(num=5)
+    def start_download_thread(num=4)
       num.times{
         t = Thread.start{
           while(@queue.empty? == false)
