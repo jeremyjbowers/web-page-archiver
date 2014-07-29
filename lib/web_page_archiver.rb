@@ -79,7 +79,7 @@ module WebPageArchiver
             next if @contents[k][:body] != nil
 
             v = @contents[k][:uri]
-            puts "\t-> #{v}".colorize(:light_blue)
+            puts "\t-> #{v}"
 
             f = ""
 
